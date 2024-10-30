@@ -7,28 +7,33 @@ const Login = (props) => {
     const host = "https://inote-backend-9y88.onrender.com";
     const [credentials,setCredentials]= useState({email:"",password:""})
     let navigate=useNavigate ();
-    const handleSubmit=async (e)=>{
-         e.preventDefault();
-         const response = await fetch(`${host}/api/auth/login`, {
-            method: "POST",
-            headers: {
-              "Content-Type": "application/json",
-             
-            },
-            body: JSON.stringify({ email:credentials.email,password:credentials.password }),
-          });
-        const json=await response.json()
-        
-       if(json.success){
-     localStorage.setItem('token',json.authToken);
-     navigate("/")
-     props.showAlert("Logged in successfully","success")
-       }
-       else
-       {
-        props.showAlert("invalid details","danger")
-       }
-    }
+    const handleSubmit = async (e) => {
+      e.preventDefault();
+    
+      try {
+        const response = await fetch(`${host}/api/auth/login`, {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({ email: credentials.email, password: credentials.password }),
+        });
+    
+        const json = await response.json();
+    
+        if (response.ok) { // Check if the response status is OK
+          localStorage.setItem('token', json.authToken);
+          navigate("/");
+          props.showAlert("Logged in successfully", "success");
+        } else {
+          props.showAlert(json.error || "Invalid details", "danger"); // Show specific error if available
+        }
+      } catch (error) {
+        console.error("Login error:", error);
+        props.showAlert("An error occurred. Please try again.", "danger");
+      }
+    };
+    
 
     const onchange=(e)=>{
         setCredentials({...credentials,[e.target.name]:e.target.value})
